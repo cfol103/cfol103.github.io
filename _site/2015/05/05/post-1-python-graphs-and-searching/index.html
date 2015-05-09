@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="UTF-8">
+  <title>Python Graphs and Searching with BFS & DFS</title>
+  <meta name="viewport" content="width=device-width">
+
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="/assets/css/style.css" rel="stylesheet" />
+  <link href="/assets/css/colors-dark.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+
+
+  <header id="header">
+    <h1><a href="/"><i class="icon-sun"></i> Interview Cat</a></h1>
+    <p>...musings on interview problems</p>
+  </header>
+
+
+
+  <div id="page">
+
+
+
+    <div id="sidebar">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/archives">Archive</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+      </nav>
+    </div>
+
+
+
+    <div id="content">
+      <article class="post">
+
+	
+		<h1><a href="/2015/05/05/post-1-python-graphs-and-searching/">Python Graphs and Searching with BFS & DFS</a></h1>
+	
+
+	<div class="post-content"><p>Graphs and their associated search algorithms are important concepts to master in CS.
+They are also an integral part of many technical interview problems.</p>
+
+<p>In this post, we will cover how to represent graphs in Python and implement their search algorithms.</p>
+
+<h3 id="reprenting-a-graph">Reprenting a Graph:</h3>
+
+<p>A graph can be succinctly represented in Python by using a <code>dict</code> where the keys correspond to
+the nodes on the graph and the value for a given key is just the set of neighboring/adjacent nodes 
+connected via an edge/arc. </p>
+
+<p>Consider the following undirected graph:</p>
+
+<p><img src="/images/post-1-example_graph1.png" /></p>
+
+<p>The above can be represented like this:</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">graph</span> <span class="o">=</span> <span class="p">{</span>
+	<span class="s">&#39;A&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="s">&#39;D&#39;</span><span class="p">]),</span>
+	<span class="s">&#39;B&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="s">&#39;E&#39;</span><span class="p">]),</span>
+	<span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="s">&#39;B&#39;</span><span class="p">]),</span>
+	<span class="s">&#39;D&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="s">&#39;E&#39;</span><span class="p">,</span> <span class="s">&#39;F&#39;</span><span class="p">]),</span>
+	<span class="s">&#39;E&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;D&#39;</span><span class="p">]),</span>
+	<span class="s">&#39;F&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s">&#39;D&#39;</span><span class="p">])</span>
+<span class="p">}</span></code></pre></div>
+
+<p><br />
+<a href="http://en.wikipedia.org/wiki/Adjacency_matrix">Other</a> <a href="http://en.wikipedia.org/wiki/Incidence_matrix">ways</a> to represent graphs exist, 
+but we’ll stick to using the above.</p>
+
+<h3 id="searching-breadth-first-search-bfs">Searching: Breadth-first Search (BFS)</h3>
+
+<p>Consider finding a path from a starting node to a destination node in a graph.
+In searching for a destination node, BFS allows us to traverse the graph in such
+a way so that the search will find the destination via a shortest length path.
+If the destination node doesn’t exist, the BFS will traverse all nodes and edges.</p>
+
+<p>Below we can see an implementation of BFS:</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="lineno"> 1</span> <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="lineno"> 2</span> 
+<span class="lineno"> 3</span> <span class="k">def</span> <span class="nf">bfs</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">start_node</span><span class="p">,</span> <span class="n">destination_node</span><span class="p">):</span>
+<span class="lineno"> 4</span>   <span class="sd">&quot;&quot;&quot;</span>
+<span class="lineno"> 5</span> <span class="sd">  Return True if there exists a path from start to destination.</span>
+<span class="lineno"> 6</span> <span class="sd">  &quot;&quot;&quot;</span>
+<span class="lineno"> 7</span>   <span class="n">queue</span><span class="p">,</span> <span class="n">visited</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([</span><span class="n">start_node</span><span class="p">]),</span> <span class="nb">set</span><span class="p">()</span>
+<span class="lineno"> 8</span>   <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+<span class="lineno"> 9</span>     <span class="n">current_node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+<span class="lineno">10</span>     <span class="k">if</span> <span class="n">current_node</span> <span class="o">==</span> <span class="n">destination_node</span><span class="p">:</span>
+<span class="lineno">11</span>       <span class="k">return</span> <span class="bp">True</span>
+<span class="lineno">12</span>     <span class="k">if</span> <span class="n">current_node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+<span class="lineno">13</span>       <span class="n">queue</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">graph</span><span class="p">[</span><span class="n">current_node</span><span class="p">]</span> <span class="o">-</span> <span class="n">visited</span><span class="p">)</span>
+<span class="lineno">14</span>       <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_node</span><span class="p">)</span>
+<span class="lineno">15</span>   <span class="k">return</span> <span class="bp">False</span></code></pre></div>
+
+<p><br /></p>
+
+<p>When visiting a node, we add all neighboring nodes to a queue; that is, when visiting
+a node that is at some path length <code>L</code> from our start, we enqueue neighboring nodes which
+must be at path length <code>L + 1</code>. </p>
+
+<p>Therefore, since our starting node (L == 0) will enqueue all neighboring nodes
+, this means that all nodes at path length L == 1 will be next to each other in the queue. As we process these
+nodes at L == 1, we add neighboring nodes at L == 2, meaning that all L == 2 nodes will be next to each
+other in the queue and so on…</p>
+
+<p>Do you notice something?</p>
+
+<p>We don’t begin exploring ANY node at path length <code>L + 1</code> until all nodes at <code>L</code> have been visited.</p>
+
+<p>Therefore, since BFS exhausts all nodes at a specific path length before exploring other nodes
+at a greater path length, we can see that when BFS encounters a destination node, we also have
+a shortest path to destination.</p>
+
+<p>Knowing the shortest path to a destination can be very useful in many occasions (e.g. figuring out
+the minimal number of steps to get from one state to another).</p>
+
+<p>How can we modify our BFS code to keep track of the path to the destination_node?</p>
+
+<p>This can be done by keeping track of a <code>prevs</code> dict 
+that maps nodes to the previous node on their path.
+Therefore, once we have reached the destination, all
+nodes in the path are keys in the <code>prevs</code> dict, each
+with a value corresponding to the previous node in their path.
+Therefore, we use a function to list the path out in the 
+correct order by following the nodes in the <code>prevs</code> dict.</p>
+
+<p>This is shown below:</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="lineno"> 1</span> <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="lineno"> 2</span> 
+<span class="lineno"> 3</span> <span class="k">def</span> <span class="nf">bfs</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">start_node</span><span class="p">,</span> <span class="n">destination_node</span><span class="p">):</span>
+<span class="lineno"> 4</span>   <span class="sd">&quot;&quot;&quot;</span>
+<span class="lineno"> 5</span> <span class="sd">  Returns a path from the start to destination, if it exists.</span>
+<span class="lineno"> 6</span> <span class="sd">  &quot;&quot;&quot;</span>
+<span class="lineno"> 7</span>   <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([</span><span class="n">start_node</span><span class="p">])</span>
+<span class="lineno"> 8</span>   <span class="n">prevs</span> <span class="o">=</span> <span class="p">{</span><span class="n">start_node</span> <span class="p">:</span> <span class="s">&#39;&#39;</span><span class="p">}</span>
+<span class="lineno"> 9</span>   <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+<span class="lineno">10</span>     <span class="n">current_node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+<span class="lineno">11</span>     <span class="k">if</span> <span class="n">current_node</span> <span class="o">==</span> <span class="n">destination_node</span><span class="p">:</span>
+<span class="lineno">12</span>       <span class="k">return</span> <span class="n">_list_path</span><span class="p">(</span><span class="n">prevs</span><span class="p">,</span> <span class="n">start_node</span><span class="p">,</span> <span class="n">destination_node</span><span class="p">)</span>
+<span class="lineno">13</span>     <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">current_node</span><span class="p">]</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">prevs</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+<span class="lineno">14</span>       <span class="n">queue</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">neighbor</span><span class="p">)</span>
+<span class="lineno">15</span>       <span class="n">prevs</span><span class="p">[</span><span class="n">neighbor</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_node</span>
+<span class="lineno">16</span> 
+<span class="lineno">17</span> <span class="k">def</span> <span class="nf">_list_path</span><span class="p">(</span><span class="n">prevs</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+<span class="lineno">18</span>   <span class="n">deq</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([</span><span class="n">dst</span><span class="p">])</span>
+<span class="lineno">19</span>   <span class="n">cur</span> <span class="o">=</span> <span class="n">dst</span>
+<span class="lineno">20</span>   <span class="k">while</span> <span class="n">cur</span> <span class="o">!=</span> <span class="n">start</span><span class="p">:</span>
+<span class="lineno">21</span>     <span class="n">deq</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="n">prevs</span><span class="p">[</span><span class="n">cur</span><span class="p">])</span>
+<span class="lineno">22</span>     <span class="n">cur</span> <span class="o">=</span> <span class="n">prevs</span><span class="p">[</span><span class="n">cur</span><span class="p">]</span>
+<span class="lineno">23</span>   <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">deq</span><span class="p">)</span></code></pre></div>
+
+<p><br />
+We could also store the path for every node in the queue by
+storing tuples inside the queue, where the first element
+is a given node and the second element is its associated path.</p>
+
+<p>This makes it easy to keep track of all paths and 
+allows us to create a function that lazily generates all paths to the destination.</p>
+
+<p>This is shown below:</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="lineno"> 1</span> <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="lineno"> 2</span> 
+<span class="lineno"> 3</span> <span class="k">def</span> <span class="nf">bfs_paths</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">start_node</span><span class="p">,</span> <span class="n">destination_node</span><span class="p">):</span>
+<span class="lineno"> 4</span>   <span class="sd">&quot;&quot;&quot;</span>
+<span class="lineno"> 5</span> <span class="sd">  Generate paths from start to destination.</span>
+<span class="lineno"> 6</span> <span class="sd">  &quot;&quot;&quot;</span>
+<span class="lineno"> 7</span>   <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([(</span><span class="n">start_node</span><span class="p">,</span> <span class="p">[</span><span class="n">start_node</span><span class="p">])])</span>
+<span class="lineno"> 8</span>   <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+<span class="lineno"> 9</span>     <span class="n">current_node</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+<span class="lineno">10</span>     <span class="k">if</span> <span class="n">current_node</span> <span class="o">==</span> <span class="n">destination_node</span><span class="p">:</span>
+<span class="lineno">11</span>       <span class="k">yield</span> <span class="n">path</span>
+<span class="lineno">12</span>     <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">current_node</span><span class="p">]</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="lineno">13</span>       <span class="n">queue</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">node</span><span class="p">,</span> <span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">node</span><span class="p">])])</span>
+<span class="lineno">14</span> 
+<span class="lineno">15</span> <span class="k">print</span> <span class="nb">list</span><span class="p">(</span><span class="n">bfs</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="s">&#39;F&#39;</span><span class="p">))</span>
+<span class="lineno">16</span> <span class="c"># [[&#39;A&#39;, &#39;D&#39;, &#39;F&#39;], [&#39;A&#39;, &#39;B&#39;, &#39;E&#39;, &#39;D&#39;, &#39;F&#39;], [&#39;A&#39;, &#39;C&#39;, &#39;B&#39;, &#39;E&#39;, &#39;D&#39;, &#39;F&#39;]]</span></code></pre></div>
+
+<p><br />
+Let’s take a look at another way to search: DFS.</p>
+
+<h3 id="searching-depth-first-search-dfs">Searching: Depth-first Search (DFS)</h3>
+
+<p>As the name implies, when a DFS is done from a given graph
+node, it explores all possible nodes along that branch before backtracking.</p>
+
+<p>Like before, we can use DFS to find out if a given destination can be reached
+from a start.  First, we will implement DFS using recursion:</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="lineno"> 1</span> <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">visited</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="lineno"> 2</span>   <span class="sd">&quot;&quot;&quot;</span>
+<span class="lineno"> 3</span> <span class="sd">  Return True if there exists a path from start to destination.</span>
+<span class="lineno"> 4</span> <span class="sd">  &quot;&quot;&quot;</span>
+<span class="lineno"> 5</span>   <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">destination</span><span class="p">:</span>
+<span class="lineno"> 6</span>     <span class="k">return</span> <span class="bp">True</span>
+<span class="lineno"> 7</span>   <span class="c"># One would think that you can do this with default params, but</span>
+<span class="lineno"> 8</span>   <span class="c"># read this python gotcha: https://goo.gl/g72Ip1</span>
+<span class="lineno"> 9</span>   <span class="k">if</span> <span class="n">visited</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+<span class="lineno">10</span>     <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="lineno">11</span>   <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+<span class="lineno">12</span>   <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">visited</span><span class="p">:</span>
+<span class="lineno">13</span>     <span class="k">if</span> <span class="n">dfs</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">visited</span><span class="p">):</span>
+<span class="lineno">14</span>       <span class="k">return</span> <span class="bp">True</span>
+<span class="lineno">15</span>   <span class="k">return</span> <span class="bp">False</span></code></pre></div>
+
+<p><br />
+Next we will use a DFS that keeps track of the path
+and yields the full path every time the destination has been reached.</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="lineno"> 1</span> <span class="k">def</span> <span class="nf">dfs_paths</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="lineno"> 2</span>   <span class="sd">&quot;&quot;&quot;</span>
+<span class="lineno"> 3</span> <span class="sd">  Generate paths from start to destination.</span>
+<span class="lineno"> 4</span> <span class="sd">  &quot;&quot;&quot;</span>
+<span class="lineno"> 5</span>   <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">destination</span><span class="p">:</span>
+<span class="lineno"> 6</span>     <span class="k">yield</span> <span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">destination</span><span class="p">]</span>
+<span class="lineno"> 7</span>   <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+<span class="lineno"> 8</span>     <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="lineno"> 9</span>   <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span>
+<span class="lineno">10</span>   <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="lineno">11</span>     <span class="k">for</span> <span class="n">valid_path</span> <span class="ow">in</span> <span class="n">dfs_paths</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="lineno">12</span>       <span class="k">yield</span> <span class="n">valid_path</span>
+<span class="lineno">13</span> 
+<span class="lineno">14</span> <span class="c"># Testing with the same graph:</span>
+<span class="lineno">15</span> <span class="c"># &gt;&gt;&gt; list(dfs_paths(graph, &#39;A&#39;, &#39;F&#39;))</span>
+<span class="lineno">16</span> <span class="c"># [[&#39;A&#39;, &#39;C&#39;, &#39;B&#39;, &#39;E&#39;, &#39;D&#39;, &#39;F&#39;], [&#39;A&#39;, &#39;B&#39;, &#39;E&#39;, &#39;D&#39;, &#39;F&#39;], [&#39;A&#39;, &#39;D&#39;, &#39;F&#39;]]</span></code></pre></div>
+
+<p><br />
+Note that since we are using recursion, we run into the problem in python with the low recursion limit.
+While one can always change the default limit on the number of stack frames, you might be faced with a stack size constrained
+environment; therefore, it might be good to see if we can change this to an iterative DFS approach.</p>
+
+<p>So can we do it without recursion? Yes! All we have  to do is keep track of the node ordering ourselves by creating a stack, instead
+of letting the program’s stacking of frame functions do the work. </p>
+
+<p>Lets implement it now:</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="lineno"> 1</span> <span class="k">def</span> <span class="nf">dfs_iterative</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">destination</span><span class="p">):</span>
+<span class="lineno"> 2</span>   <span class="sd">&quot;&quot;&quot;</span>
+<span class="lineno"> 3</span> <span class="sd">  Generate all paths from start to destination.</span>
+<span class="lineno"> 4</span> <span class="sd">  &quot;&quot;&quot;</span>
+<span class="lineno"> 5</span>   <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="p">[</span><span class="n">start</span><span class="p">])]</span>
+<span class="lineno"> 6</span>   <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+<span class="lineno"> 7</span>     <span class="n">node</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+<span class="lineno"> 8</span>     <span class="k">if</span> <span class="n">node</span> <span class="o">==</span> <span class="n">destination</span><span class="p">:</span>
+<span class="lineno"> 9</span>       <span class="k">yield</span> <span class="n">path</span>
+<span class="lineno">10</span>     <span class="n">stack</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">adj</span><span class="p">,</span> <span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">adj</span><span class="p">])</span> <span class="k">for</span> <span class="n">adj</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+<span class="lineno">11</span> 
+<span class="lineno">12</span> <span class="c"># Testing with the same graph:</span>
+<span class="lineno">13</span> <span class="c"># &gt;&gt;&gt; list(dfs_iterative(graph, &#39;A&#39;, &#39;F&#39;))</span>
+<span class="lineno">14</span> <span class="c"># [[&#39;A&#39;, &#39;D&#39;, &#39;F&#39;], [&#39;A&#39;, &#39;B&#39;, &#39;E&#39;, &#39;D&#39;, &#39;F&#39;], [&#39;A&#39;, &#39;C&#39;, &#39;B&#39;, &#39;E&#39;, &#39;D&#39;, &#39;F&#39;]]</span></code></pre></div>
+
+<p><br />
+That’s all for now. Try using these new concepts in your problems.</p>
+
+</div>
+
+	<p class="meta">Posted on <span class="postdate">May 05, 2015</span></p>
+
+</article>
+    </div>
+
+
+
+  </div>
+
+
+
+  <footer id="footer">
+    <p class="copyright">Copyright &copy; 2015 Interview Cat. Powered by <a href="http://jekyllrb.com">Jekyll</a>, theme by <a href="http://www.webmaster-source.com">Matt Harzewski</a></p>
+  </footer>
+
+
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+  <script src="/assets/js/jquery.mobilemenu.min.js"></script>
+
+  <script>
+    $(document).ready(function(){
+      $('#sidebar nav ul').mobileMenu({'topOptionText': 'Menu', 'prependTo': '#sidebar nav'});
+    });
+  </script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+name: Interview Cat
+url: http://interviewcat.com
+description: ...musings on interview problems
+
+permalink: /:year/:month/:day/:title/
+paginate: 10
+highlighter: pygments
+exclude: ['README.md', 'Gemfile.lock', 'Gemfile', 'Rakefile']
